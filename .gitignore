@@ -1,0 +1,37 @@
+# Runtime and generated files
+__pycache__/
+*.py[cod]
+*.pyo
+*.zip
+*.log
+*.tmp
+
+# Local validation and scratch outputs
+_skill_work/
+tmp_skill_tests/
+paper_matrix_skills/
+
+# Local environment files
+.env
+.env.*
+.venv/
+venv/
+node_modules/
+
+# Documents and private research artifacts that should not live in this skill repo
+*.pdf
+*.docx
+*.pptx
+*.xlsx
+*.xls
+*.csv
+*.tsv
+*.png
+*.jpg
+*.jpeg
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

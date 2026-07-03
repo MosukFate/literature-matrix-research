@@ -1,0 +1,7 @@
+interface:
+  display_name: "Literature Matrix Research"
+  short_description: "Source-grounded paper matrix and Obsidian deep-reading package builder."
+  default_prompt: "Use $literature-matrix-research to turn this seed paper or research topic into a source-grounded Obsidian paper matrix."
+
+policy:
+  allow_implicit_invocation: true
