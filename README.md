@@ -26,8 +26,32 @@ Or copy this folder to:
 
 ## Usage
 
-Ask Codex to use `$literature-matrix-research` for literature matrices, Obsidian paper-card packages, source-grounded reading orders, or deep card polishing.
+Ask Codex to use `$literature-matrix-research` for source-grounded literature matrices, Obsidian reading systems, or formal deep paper cards.
 
+Default behavior:
+
+- single-paper deep card: use this when you say `read this paper`, `精读这篇`, `analyze this paper`, or `做深度卡`. The skill should read PDF/full text/source evidence and create a formal `paper-card` with method pipeline, how/why/effect, formulas, original result-table evidence or a no-table statement, result interpretation, limitations, reproduction path, project fit, and novice detail check.
+- matrix plus core deep cards: use this for a research question, paper corpus, or literature direction. The skill should build the literature matrix, split `core` / `bridge` / `supplemental` / `matrix-only`, then write formal deep cards for core papers after source review.
+- full Obsidian package: use this when you need START, dashboard, staged reading order, matrices, formal paper-cards, source audit, and validation report.
+
+Use search-only only when explicitly requested:
+
+- search-only candidate table: say `search-only`, `candidate_table`, `找论文`, `seed expansion`, or `基础调查`. The skill should output `candidate_table.csv`, `candidate_table.jsonl`, `search_log.json`, `failed_queries.md`, `source_status`, `graph_relation`, and `layer`; it should not write deep cards yet.
+- fast planning map: ask for a planning-stub research map. Entries should stay as `paper-stub` or `matrix-stub` until source evidence is sufficient for `paper-card` promotion.
+
+Example prompts:
+
+```text
+Use literature-matrix-research to close-read this paper and create a formal paper-card from the PDF/full text.
+```
+
+```text
+Use literature-matrix-research for this research question. Build the literature matrix, split core/bridge/supplemental/matrix-only, then write formal deep cards for the core papers after source review.
+```
+
+```text
+Search-only / candidate_table / 找论文 / seed expansion / 基础调查 for this topic. Do not write deep cards yet.
+```
 ## Validation
 
 Validate the skill metadata:

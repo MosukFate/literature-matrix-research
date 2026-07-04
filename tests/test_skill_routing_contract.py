@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = (ROOT / "SKILL.md").read_text(encoding="utf-8")
 INTEGRATION = (ROOT / "references" / "skill_integration.md").read_text(encoding="utf-8")
+README = (ROOT / "README.md").read_text(encoding="utf-8")
 
 
 def test_mode_router_is_explicit_and_progressive():
@@ -41,6 +42,12 @@ def test_no_mojibake_in_routing_labels():
     assert "这么做的效果是什么" in SKILL
     assert "结果解析 / Result interpretation" in SKILL
 
+def test_readme_usage_examples_match_default_routes():
+    assert "single-paper deep card" in README
+    assert "matrix plus core deep cards" in README
+    assert "search-only candidate table" in README
+    assert "candidate_table.csv" in README
+    assert "基础调查" in README
 
 def test_integration_search_only_points_to_discovery_first():
     section_start = INTEGRATION.index("### `search-only`")
@@ -56,5 +63,6 @@ if __name__ == "__main__":
     test_usage_examples_cover_default_and_search_only()
     test_skill_chaining_names_supporting_skills_without_force_loading()
     test_no_mojibake_in_routing_labels()
+    test_readme_usage_examples_match_default_routes()
     test_integration_search_only_points_to_discovery_first()
     print("test_skill_routing_contract.py passed")
