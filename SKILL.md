@@ -27,20 +27,43 @@ Do not use it for a one-off paper lookup, a generic APA literature review, or a 
 
 ## Modes
 
-Default to `obsidian-package` unless the user asks for a narrower task.
+Default to `matrix` plus formal deep cards for paper-reading or research-synthesis requests. Use `search-only` only when the user explicitly asks for basic survey, candidate discovery, `candidate_table`, finding papers, or seed expansion.
 
 | Mode | Use when | Output |
 |---|---|---|
-| `search-only` | building a candidate pool | source list, inclusion/exclusion notes, venue/source status |
+| `search-only` | building a candidate pool or expanding a seed paper/research gap | discovery pipeline outputs, candidate table, inclusion/exclusion notes, venue/source status, citation graph signals |
 | `matrix` | organizing known papers | quicklook table, venue trust split, benchmark/results matrix |
 | `obsidian-package` | creating a full reading system | START, dashboard, staged indexes, cards, matrices, audits |
 | `audit-only` | checking an existing package | review matrix, findings report, link/source checks |
 | `card-polish` | improving existing cards | edited cards plus polish report |
-| `beginner-expansion` | making cards readable for non-readers | `## 0. 鏂版墜瀵艰` plus formula/metric explanation |
+| `beginner-expansion` | making cards readable for non-readers | `## 0. 总览摘要` plus formula/metric explanation |
 | `deep-table-enrichment` | making cards method-complete and table-grounded | detailed methods, embedded examples, original result tables, result interpretation |
 | `paper-original-rewrite` | fixing shallow or templated cards | paper-specific how/why/effect method rewrite, manually corrected tables, source-scoped conclusions |
 | `planning-stub` | making a lightweight research-planning map when full papers are not yet read | `type: paper-stub` or `type: matrix-stub`; never `type: paper-card` |
 
+## Mode Router
+
+Default route: use `matrix + formal deep cards` for normal paper-reading, single-paper close reading, and research-synthesis requests. Do not stop at `candidate_table` unless the user explicitly asks for `search-only`, `candidate_table`, finding papers, seed expansion, or a basic survey.
+
+- Single-paper close reading: if the user asks to read, explain, summarize deeply, analyze, or make notes for one paper, create a formal `paper-card` after source/PDF/full-text review. If evidence is insufficient, create `paper-stub` and record what source is missing; do not downgrade to `search-only` just because there is one paper.
+- Research topic or paper corpus: build a `matrix` first, then write formal deep cards for core papers after source review. Keep bridge/supplemental/matrix-only layers visible.
+- `search-only`: use only when the user explicitly asks for `search-only`, `candidate_table`, candidate discovery, finding papers, seed expansion, novelty-risk scanning, citation graph expansion, or basic survey. Run `scripts/discover_candidates.py` when local execution is available, then preserve `candidate_table.csv`, `candidate_table.jsonl`, `search_log.json`, and `failed_queries.md`. Do not create `paper-card` notes from discovery rows.
+- `matrix`: use when papers are known or after search screening when the user needs organization, trust splitting, benchmark comparison, relevance layering, or reading order. A matrix can hand off core papers to formal deep-card writing.
+- `obsidian-package`: use when the user wants the complete reading system with START, dashboards, indexes, cards, matrices, and audits.
+- `audit-only`: use when reviewing an existing package or checking source status, links, tables, claims, and validator findings.
+- `card-polish`, `beginner-expansion`, `deep-table-enrichment`, and `paper-original-rewrite`: use only after cards already exist or paper sources have been read deeply enough for formal `paper-card` work.
+- `planning-stub`: use when the user needs a fast research map before full source reading. Keep outputs as `paper-stub` or `matrix-stub` until validation supports promotion.
+## Usage Examples
+
+Use these prompt patterns to choose the right route:
+
+- Default single-paper deep card: `Use literature-matrix-research to close-read this paper and create a formal paper-card from the PDF/full text. Include method pipeline, how/why/effect, formulas, original result-table evidence or a no-table statement, result interpretation, limitations, reproduction path, project fit, and novice detail check.`
+- Default research matrix plus core deep cards: `Use literature-matrix-research for this research question. Build the literature matrix, split core/bridge/supplemental/matrix-only, then write formal deep cards for the core papers after source review.`
+- Full Obsidian package: `Use literature-matrix-research to create the complete Obsidian package with START, dashboard, staged reading order, matrices, formal paper-cards, source audit, and validation report.`
+- search-only candidate table: `Search-only / candidate_table / 找论文 / seed expansion / 基础调查 for this topic. Output candidate_table.csv/jsonl, search_log.json, failed_queries.md, source_status, graph_relation, and layer; do not write deep cards yet.`
+- Fast planning map: `Create a planning-stub research map only. Use paper-stub or matrix-stub labels, and do not promote entries to paper-card until source evidence is sufficient.`
+
+If the user says only `read this paper`, `精读这篇`, `analyze this paper`, or `做深度卡`, treat it as the default single-paper deep-card route, not as `search-only`.
 ## Skill Chaining and Evolution
 
 This skill is the canonical orchestrator for literature-matrix work, not a silo. When a phase needs a capability already covered by another skill, load the smallest relevant supporting skill at that phase boundary and preserve its evidence in this matrix schema.
@@ -60,7 +83,7 @@ When the user adds a new rule, append it through the evolution protocol rather t
 ## Core Workflow
 
 1. Establish the research question, seed papers, date range, venue policy, package root, mirror/sync target, and deliverable mode.
-2. Search and screen papers; record raw URLs, official identifiers, failed searches, and source status.
+2. Search and screen papers. For online discovery or seed expansion, run `scripts/discover_candidates.py` or reproduce its candidate-table contract; record raw URLs, official identifiers, failed searches, citation graph signals, and source status.
 3. Deduplicate by title, DOI, arXiv ID, OpenReview ID, and official venue page.
 4. Split papers into core, core-support, bridge, supplemental, matrix-only, and excluded.
 5. Build matrices before deep cards so coverage gaps are visible early.
@@ -74,11 +97,11 @@ When the user adds a new rule, append it through the evolution protocol rather t
 
 - `type: paper-card` is a contract, not a folder label. It means the paper has been read or source-extracted deeply enough to explain the paper through the AI paper deep-read schema: positioning, core logic, method, formulas, innovation, evidence, limitations, reproduction, reading advice, and final summary.
 - Lightweight planning notes must be named honestly: use `type: paper-stub` for one-paper placeholders and `type: matrix-stub` for matrix-only/background entries. Do not promote them to `paper-card` until the source evidence has been read and the card passes the deep-card validator.
-- Write as the analyst who already read the paper. Do not tell the user how to read the paper (`璇诲疄楠屾椂...`, `璇绘柟娉曟椂...`) unless the file is explicitly a reading guide.
+- Write as the analyst who already read the paper. Do not tell the user how to read the paper, for example `读实验时...` or `读方法时...`, unless the file is explicitly a reading guide.
 - `## 3. 方法/模型/训练/推理拆解` must answer three questions in paper-specific prose:
-  - **How / 鎬庝箞鍋?*: workflow, data flow, modules, training or benchmark construction, inputs/outputs, objective/loss/metric, and enough reproduction-level detail to know the approximate pipeline.
-  - **Why / 涓轰粈涔堣繖涔堝仛**: what prior approach failed, what assumption the design encodes, and why each module/loss/control matters.
-  - **Effect / 杩欎箞鍋氱殑鏁堟灉鏄粈涔?*: internal representation change, benchmark/task change, ablation evidence, trade-off, and what remains unproven.
+  - **How / 怎么做**: workflow, data flow, modules, training or benchmark construction, inputs/outputs, objective/loss/metric, and enough reproduction-level detail to know the approximate pipeline.
+  - **Why / 为什么这么做**: what prior approach failed, what assumption the design encodes, and why each module/loss/control matters.
+  - **Effect / 这么做的效果是什么**: internal representation change, benchmark/task change, ablation evidence, trade-off, and what remains unproven.
 - Examples and analogies are explanatory instruments, not decorative endings. Embed them directly inside method, evidence, limitation, or project-relation paragraphs.
 - Preserve paper identity. If title, task type, or method family conflicts with the card, fix the card and related matrices before polishing prose.
 
@@ -107,8 +130,8 @@ For model papers, the ladder is usually: input representation -> backbone/encode
 - Prefer original result evidence in this order: official HTML/table, arXiv HTML, PDF visual/manual correction, local converted Markdown, pdfplumber/MarkItDown candidate.
 - If extraction mangles headers or merged cells, manually reconstruct the relevant table from the original PDF/HTML/source text and label it `manually corrected from source text/PDF; numeric cells require PDF check before formal citation`.
 - Include only tables that support the card's method, benchmark design, main result, ablation, limitation, or project relation.
-- Every table must be followed immediately by `缁撴灉瑙ｆ瀽 / Result interpretation`: what the table shows, what it means, what it does not prove, and why it matters for the project.
-- If a paper has no extractable or relevant result table, the card must say so explicitly with a source-grounded reason, for example `No extractable result table relevant to this card` / `鏃犲彲鎻愬彇涓斾笌鏈崱鐩稿叧鐨勫師鏂囩粨鏋滆〃`. Silence is not acceptable for a formal `paper-card`.
+- Every table must be followed immediately by `结果解析 / Result interpretation`: what the table shows, what it means, what it does not prove, and why it matters for the project.
+- If a paper has no extractable or relevant result table, the card must say so explicitly with a source-grounded reason, for example `No extractable result table relevant to this card` / `无可提取且与本卡相关的原文结果表`. Silence is not acceptable for a formal `paper-card`.
 - Compact fallback is allowed only when extraction fails and must be labeled `fallback summary; verify original table before citation`.
 - Never invent benchmark scores, dataset sizes, model counts, rankings, or SOTA claims.
 - Benchmark results define failure surfaces; they do not prove mechanisms unless paired with source-anchored intervention, ablation, probing, or representation analysis.
@@ -121,6 +144,7 @@ Read only the reference needed for the current mode:
 - Formal paper-card structure: `references/ai_paper_deep_read_card_schema.md`.
 - Deep-card pressure tests and novice repair gate: `references/deep_card_depth_pressure_tests.md`.
 - Paper lookup, identifiers, official sources, query expansion: `references/paper_lookup_playbook.md`.
+- Online discovery, candidate-table schema, citation graph expansion, scoring, and arXiv policy: `references/discovery_pipeline.md`.
 - PDF/TXT/table extraction and source anchors: `references/pdf_source_extraction.md`.
 - Synthesis, novelty-risk audit, reviewer-style critique: `references/review_synthesis_rubric.md`.
 - Obsidian Markdown, wikilinks, callouts, Canvas/Bases: `references/obsidian_markdown_playbook.md`.
@@ -168,7 +192,7 @@ The scripts are heuristics, not substitutes for paper-level source review. Treat
 - Letting `source-level ready` stubs masquerade as finished `type: paper-card` notes.
 - Writing fluent beginner explanations that add claims not supported by the card, ledger, or original paper.
 - Telling the reader how to read the paper instead of summarizing what the paper does and what its evidence means.
-- Using a reusable paragraph that says `杈撳叆瑙嗚璇佹嵁鎴栬棰戝抚...姣忎釜鑺傜偣閮藉彲鑳戒涪澶卞嚑浣曚俊鎭痐 without paper-specific workflow detail.
+- Using a reusable paragraph such as `input visual evidence or video frames...` without paper-specific workflow detail.
 - Counting matrix-only entries as fully verified deep cards.
 - Treating benchmark wins, attention heatmaps, or abstract claims as causal mechanism evidence.
 - Adding examples at the end as decorative content instead of using them to explain method or evidence.

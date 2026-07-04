@@ -61,9 +61,10 @@ Pick the smallest supporting skill set that covers the phase:
 
 ### `search-only`
 
-Use `paper-lookup` first for exact candidates and identifiers. Add `literature-review` when the user needs systematic coverage rather than a quick candidate pool. Output:
+Use `scripts/discover_candidates.py` or reproduce its output contract first for exact candidates, identifiers, citation graph signals, source_status, and ranking. Add `paper-lookup` for source verification and `literature-review` when the user needs systematic coverage rather than a quick candidate pool. Output:
 
-- Query variants and databases.
+- Query variants, databases, and official-source adapters.
+- `candidate_table.csv` / JSONL rows with source_status, graph_relation, scores, and layer.
 - Raw source URLs and identifiers.
 - Inclusion/exclusion reason.
 - Venue/source status.

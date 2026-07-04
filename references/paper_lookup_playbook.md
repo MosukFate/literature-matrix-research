@@ -59,10 +59,7 @@ Record failed searches too; they explain why coverage may be incomplete.
 
 ## Candidate Table
 
-Maintain this table while searching:
-
-| ID | Title | Year | Venue/source | DOI/arXiv/OpenReview | Official URL | PDF URL | Code/data | Why relevant | Initial layer |
-|---|---|---:|---|---|---|---|---|---|---|
+For online discovery, prefer the full schema in `references/discovery_pipeline.md` and validate it with `scripts/validate_candidate_table.py`. At minimum, preserve title, year, venue/source, source_status, DOI/arXiv/OpenReview/ACL/PMLR/CVF IDs, official URL, PDF URL, code/data URL, graph_relation, scores, why_relevant, why_core, and initial layer.
 
 ## Deduplication
 
@@ -101,4 +98,4 @@ Exclude or defer:
 - `matrix-only`: relevant but not deep-reviewed yet.
 - `excluded`: not relevant enough or too weakly sourced.
 
-Do not discard high-relevance arXiv work if it creates novelty risk; put it in supplemental.
+Do not discard high-relevance arXiv work if it creates novelty risk. It may enter `core` or `bridge` only when `why_core` explains its direct value and `source_status` remains `arxiv-only`.

@@ -1,0 +1,77 @@
+{
+  "gap": "low-frequency facts entering reasoning trajectories and composing with general commonsense rules",
+  "records": [
+    {
+      "source": "arxiv",
+      "title": "Tracing Low-Frequency Facts in Language Model Reasoning",
+      "year": 2025,
+      "venue": "arXiv",
+      "abstract": "We use activation patching and causal tracing to study how low-frequency entity facts enter reasoning trajectories.",
+      "arxiv_id": "2501.00001",
+      "pdf_url": "https://arxiv.org/pdf/2501.00001",
+      "citation_count": 12,
+      "query": "low-frequency facts reasoning trajectories activation patching",
+      "graph_relation": "query_hit",
+      "has_code": true
+    },
+    {
+      "source": "semantic_scholar",
+      "title": "Tracing Low Frequency Facts in Language Model Reasoning",
+      "year": 2025,
+      "venue": "arXiv",
+      "abstract": "Activation patching reveals low frequency fact use in model reasoning.",
+      "arxiv_id": "2501.00001",
+      "semantic_scholar_id": "S2-LOWFACT",
+      "citation_count": 15,
+      "graph_relation": "semantic_related"
+    },
+    {
+      "source": "openalex",
+      "title": "Tracing Low-Frequency Facts in Language Model Reasoning",
+      "year": 2025,
+      "venue": "arXiv",
+      "abstract": "Low-frequency facts are causally linked to reasoning outcomes.",
+      "openalex_id": "W123",
+      "arxiv_id": "2501.00001",
+      "citation_count": 14,
+      "graph_relation": "semantic_related"
+    },
+    {
+      "source": "pmlr",
+      "title": "Causal Tracing of Factual Recall in Transformers",
+      "year": 2024,
+      "venue": "ICML",
+      "abstract": "We localize factual recall circuits using causal tracing and activation patching.",
+      "doi": "10.5555/icml.fake",
+      "pmlr_url": "https://proceedings.mlr.press/v235/fake.html",
+      "pdf_url": "https://proceedings.mlr.press/v235/fake/fake.pdf",
+      "citation_count": 140,
+      "query": "causal tracing factual recall transformers",
+      "graph_relation": "cited_by_seed"
+    },
+    {
+      "source": "arxiv",
+      "title": "A Highly Cited Survey of Generic Neural Networks",
+      "year": 2021,
+      "venue": "arXiv",
+      "abstract": "A broad survey of neural networks without discussion of long-tail facts, commonsense rules, or activation tracing.",
+      "arxiv_id": "2101.99999",
+      "citation_count": 5000,
+      "query": "neural networks survey",
+      "graph_relation": "query_hit"
+    },
+    {
+      "source": "acl",
+      "title": "Entity Commonsense Reasoning with Knowledge Graphs",
+      "year": 2023,
+      "venue": "ACL",
+      "abstract": "A benchmark for entity-aware commonsense reasoning grounded in knowledge graphs.",
+      "acl_id": "2023.acl-long.999",
+      "official_url": "https://aclanthology.org/2023.acl-long.999/",
+      "pdf_url": "https://aclanthology.org/2023.acl-long.999.pdf",
+      "citation_count": 90,
+      "query": "entity commonsense reasoning knowledge graph",
+      "graph_relation": "shared_reference"
+    }
+  ]
+}

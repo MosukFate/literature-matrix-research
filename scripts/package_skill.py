@@ -9,7 +9,7 @@ import zipfile
 from pathlib import Path
 
 
-EXCLUDE_PARTS = {"__pycache__", ".git"}
+EXCLUDE_PARTS = {"__pycache__", ".git", ".tmp"}
 EXCLUDE_SUFFIXES = {".pyc", ".pyo"}
 
 
