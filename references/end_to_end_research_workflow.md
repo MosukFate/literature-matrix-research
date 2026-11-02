@@ -1,6 +1,6 @@
 # Standalone Research Workflow
 
-Use this reference when no separate literature-review, deep-research, paper-lookup, PDF, reviewer, or Obsidian skills are available. It compresses those capabilities into one workflow, with traceability preserved for every paper and claim.
+Use this reference when the required supporting capabilities are unavailable. Check `academic-research-suite` for ARS research/reviewer/writing support before choosing this fallback; missing legacy standalone ARS entries alone are not a reason to use it. It compresses unavailable capabilities into one workflow, with traceability preserved for every paper and claim.
 
 ## Mode Selection
 

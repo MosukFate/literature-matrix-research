@@ -1,4 +1,4 @@
-# Literature Matrix Skill Merge Pressure Tests - 2026-06-30
+﻿# Literature Matrix Skill Merge Pressure Tests - 2026-06-30
 
 ## Scope
 
@@ -28,8 +28,9 @@ Subagent pressure testing was not used in this Codex run because the available m
 Run after editing:
 
 ```powershell
-rg -n "## 7\. 示例|compact reconstructions|compact table-backed" <skill-root>
-Test-Path <skill-root>
+$skillRoot = (Resolve-Path .).Path
+rg -n "## 7\. 示例|compact reconstructions|compact table-backed" "$skillRoot"
+Test-Path "$skillRoot"
 ```
 
 Expected:

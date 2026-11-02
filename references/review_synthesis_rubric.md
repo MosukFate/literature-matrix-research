@@ -111,10 +111,10 @@ For each proposed target:
 
 ## Reviewer-Style Final Check
 
-Before finalizing a package or proposal, simulate three reviewers:
+Before finalizing a package or proposal, apply three scoped critique perspectives:
 
 - Method reviewer: controls, baselines, reproducibility, metrics.
 - Domain reviewer: missing related work, venue trust, evidence scope.
 - Devil's advocate: strongest alternative explanation and novelty attack.
 
-Convert their objections into the findings report or proposal risk section.
+Convert their objections into the findings report or proposal risk section. These perspectives are matrix-level critique, not a full ARS review panel or evidence of independent execution. When the user explicitly requests full manuscript review, hand off through `academic-research-suite` and follow the installed reviewer workflow's current mode contracts.

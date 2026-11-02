@@ -16,6 +16,22 @@ Do not change unless explicitly requested:
 
 Only update index text if card edits make existing navigation misleading.
 
+## Reuse Before Rewriting
+
+Read `existing_note_matches.jsonl` when discovery was given `--notes-root`, then
+read the selected existing note before generating content. A unique identity
+match reuses the existing card ID and filename. Ambiguous or conflicting matches
+remain in the review queue until resolved; do not create a duplicate as a
+workaround.
+
+Preserve user annotations, questions, hypotheses, manually added citations, and
+existing image assets. Change only the sections or generated claims needed for
+the requested update. If a newer source conflicts with a personal note or older
+evidence, retain the note and record the source/version and unresolved conflict
+rather than silently replacing it. Note presence and note type are not evidence
+of full-text reading or verification; the original card/stub and evidence gates
+still govern promotion.
+
 ## Section-Level Polish Rules
 
 ### `one_sentence_summary`

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import html as html_lib
 import json
 import math
 import re
@@ -21,6 +22,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
+
+from existing_notes import match_existing_notes
 
 CANDIDATE_FIELDS = [
     "id", "title", "year", "venue", "sources", "source_status", "layer",
@@ -416,36 +419,119 @@ def search_acl(query: str, limit: int, failed: list[dict[str, str]]) -> list[dic
     return out
 
 
-def search_pmlr(query: str, limit: int, failed: list[dict[str, str]]) -> list[dict[str, Any]]:
-    out, query_tokens = [], tokens(query)
-    for volume in [267, 235, 238, 202, 201, 162]:
-        html = http_text(f"https://proceedings.mlr.press/v{volume}/", failed, "pmlr")
-        for match in re.finditer(r'href="(?P<href>v\d+/[^"]+\.html)"[^>]*>(?P<title>[^<]+)</a>', html):
-            title = re.sub(r"\s+", " ", match.group("title")).strip()
-            overlap = tokens(title) & query_tokens
-            if query_tokens and len(overlap) < (2 if len(query_tokens) >= 3 else 1):
+def html_plain(text: str) -> str:
+    return " ".join(html_lib.unescape(re.sub(r"<[^>]+>", " ", text)).split())
+
+
+def conference_year_window(year_from: int = 0, year_to: int = 0) -> tuple[int, int]:
+    """Use three calendar years when a lower bound is not supplied."""
+    upper = year_to or max(year_from, datetime.now(timezone.utc).year)
+    return year_from or upper - 2, upper
+
+
+def proceedings_indexes(html: str, adapter: str) -> list[dict[str, Any]]:
+    entries = []
+    if adapter == "pmlr":
+        for item in re.findall(r"<li\b[^>]*>(.*?)</li>", html, re.S | re.I):
+            link = re.search(r'''href=["'](?:https://proceedings\.mlr\.press/|/)?([vr]\d+)/?["']''', item, re.I)
+            if not link:
                 continue
-            url = f"https://proceedings.mlr.press/{match.group('href')}"
-            out.append({"source": "pmlr", "title": title, "venue": "PMLR", "pmlr_url": url, "official_url": url, "query": query})
-            if len(out) >= limit:
-                return out
+            label = re.sub(r"^Volume\s+R?\d+\s*", "", html_plain(item), flags=re.I)
+            years = set(re.findall(r"\b(?:19|20)\d{2}\b", label))
+            entries.append({"url": f"https://proceedings.mlr.press/{link.group(1)}/",
+                            "label": label, "year": int(next(iter(years))) if len(years) == 1 else 0})
+    else:
+        for name, year, suffix in re.findall(r'''href=["'](?:https://openaccess\.thecvf\.com/|/)?([A-Za-z]+)(\d{4})(\.py)?/?["']''', html):
+            url = f"https://openaccess.thecvf.com/{name}{year}{suffix}?day=all"
+            if not any(row["url"] == url for row in entries):
+                entries.append({"url": url, "label": name, "year": int(year)})
+    return entries
+
+
+def proceedings_papers(html: str, adapter: str, url: str) -> list[tuple[str, str]]:
+    papers = []
+    if adapter == "pmlr":
+        for block in re.split(r'''<div\b[^>]*class=["']paper["'][^>]*>''', html, flags=re.I)[1:]:
+            title = re.search(r'''<p\b[^>]*class=["']title["'][^>]*>(.*?)</p>''', block, re.S | re.I)
+            link = re.search(r'''href=["']([^"']+\.html)["']''', block, re.I)
+            if title and link:
+                papers.append((html_plain(title.group(1)), urllib.parse.urljoin(url, link.group(1))))
+    else:
+        for block in re.findall(r'''<dt\b[^>]*class=["']ptitle["'][^>]*>(.*?)</dt>''', html, re.S | re.I):
+            link = re.search(r'''<a\b[^>]*href=["']([^"']+)["'][^>]*>(.*?)</a>''', block, re.S | re.I)
+            if link:
+                papers.append((html_plain(link.group(2)), urllib.parse.urljoin(url, link.group(1))))
+    return papers
+
+
+def search_proceedings(query: str, limit: int, failed: list[dict[str, str]], adapter: str,
+                       year_from: int, year_to: int, venues: list[str] | None,
+                       coverage: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+    lower, upper = conference_year_window(year_from, year_to)
+    venues = unique(venues or [])
+    index_url = "https://proceedings.mlr.press/" if adapter == "pmlr" else "https://openaccess.thecvf.com/menu"
+    html = http_text(index_url, failed, adapter)
+    entries = proceedings_indexes(html, adapter)
+    report = {"adapter": adapter, "query": query, "index_url": index_url,
+              "year_from": lower, "year_to": upper, "venues": venues,
+              "search_scope": ("indexed volume labels with explicit year; title matching only" if adapter == "pmlr"
+                               else "main-conference indexes; title matching only"),
+              "index_status": "retrieved" if html else "failed", "status": "failed",
+              "unknown_year_indexes": [{"url": row["url"], "label": row["label"]} for row in entries if not row["year"]],
+              "missing_indexes": [], "proceedings": [], "returned_records": 0}
+    if coverage is not None:
+        coverage.append(report)
+    if not html:
+        return []
+    if not entries:
+        report["status"] = "unparsed-index"
+        return []
+
+    def venue_matches(label: str, venue: str) -> bool:
+        return f" {normalize_title(venue)} " in f" {normalize_title(label)} "
+
+    selected = [row for row in entries if lower <= row["year"] <= upper
+                and (not venues or any(venue_matches(row["label"], venue) for venue in venues))]
+    selected.sort(key=lambda row: row["year"], reverse=True)
+    report["missing_indexes"] = [{"year": year, "venue": venue} for year in range(lower, upper + 1)
+                                 for venue in venues or ["*"]
+                                 if not any(row["year"] == year and (venue == "*" or venue_matches(row["label"], venue))
+                                            for row in selected)]
+    out, query_tokens = [], tokens(query)
+    for entry in selected:
+        state = {**entry, "status": "not-fetched-limit", "papers_parsed": 0, "title_matches": 0, "returned_records": 0}
+        report["proceedings"].append(state)
+        if len(out) >= limit:
+            continue
+        html = http_text(entry["url"], failed, adapter)
+        papers = proceedings_papers(html, adapter, entry["url"])
+        matches = [(title, url) for title, url in papers if not query_tokens
+                   or len(tokens(title) & query_tokens) >= (2 if len(query_tokens) >= 3 else 1)]
+        returned = matches[:max(0, limit - len(out))]
+        state.update(status=("failed" if not html else "unparsed" if not papers else
+                             "truncated" if len(returned) < len(matches) else "retrieved"),
+                     papers_parsed=len(papers), title_matches=len(matches), returned_records=len(returned))
+        for title, url in returned:
+            out.append({"source": adapter, "title": title, "year": entry["year"],
+                        "venue": entry["label"], f"{adapter}_url": url,
+                        "official_url": url, "query": query})
+    states = [row["status"] for row in report["proceedings"]]
+    report["returned_records"] = len(out)
+    report["status"] = ("no-index" if not selected else "truncated" if any(state in {"truncated", "not-fetched-limit"} for state in states)
+                        else "partial" if report["missing_indexes"] or any(state != "retrieved" for state in states) else "retrieved")
     return out
 
 
-def search_cvf(query: str, limit: int, failed: list[dict[str, str]]) -> list[dict[str, Any]]:
-    out, query_tokens = [], tokens(query)
-    for url in ["https://openaccess.thecvf.com/CVPR2025?day=all", "https://openaccess.thecvf.com/ICCV2025?day=all", "https://openaccess.thecvf.com/CVPR2024?day=all"]:
-        html = http_text(url, failed, "cvf")
-        for match in re.finditer(r'<dt class="ptitle"><br><a href="(?P<href>[^"]+)">(?P<title>[^<]+)</a>', html):
-            title = re.sub(r"\s+", " ", match.group("title")).strip()
-            overlap = tokens(title) & query_tokens
-            if query_tokens and len(overlap) < (2 if len(query_tokens) >= 3 else 1):
-                continue
-            paper_url = urllib.parse.urljoin(url, match.group("href"))
-            out.append({"source": "cvf", "title": title, "venue": "CVF", "cvf_url": paper_url, "official_url": paper_url, "query": query})
-            if len(out) >= limit:
-                return out
-    return out
+def search_pmlr(query: str, limit: int, failed: list[dict[str, str]], year_from: int = 0,
+                year_to: int = 0, venues: list[str] | None = None,
+                coverage: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return search_proceedings(query, limit, failed, "pmlr", year_from, year_to, venues, coverage)
+
+
+def search_cvf(query: str, limit: int, failed: list[dict[str, str]], year_from: int = 0,
+               year_to: int = 0, venues: list[str] | None = None,
+               coverage: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return search_proceedings(query, limit, failed, "cvf", year_from, year_to, venues, coverage)
 
 
 def build_queries(args: argparse.Namespace) -> list[str]:
@@ -456,15 +542,19 @@ def build_queries(args: argparse.Namespace) -> list[str]:
 
 
 def live_search(args: argparse.Namespace) -> tuple[list[dict[str, Any]], dict[str, Any], list[dict[str, str]]]:
-    failed, raw = [], []
+    failed, raw, coverage = [], [], []
     adapters = [search_arxiv, search_semantic_scholar, search_openalex, search_openreview, search_acl, search_pmlr, search_cvf]
     queries = build_queries(args)
     for query in queries:
         for adapter in adapters:
-            raw.extend(adapter(query, args.limit, failed))
+            if adapter in {search_pmlr, search_cvf}:
+                raw.extend(adapter(query, args.limit, failed, args.year_from, args.year_to,
+                                   getattr(args, "proceedings_venue", []), coverage))
+            else:
+                raw.extend(adapter(query, args.limit, failed))
             if args.sleep:
                 time.sleep(args.sleep)
-    return raw, {"created_at": datetime.now(timezone.utc).isoformat(), "queries": queries, "adapters": [fn.__name__ for fn in adapters], "record_count": len(raw), "seed_url": args.seed_url}, failed
+    return raw, {"created_at": datetime.now(timezone.utc).isoformat(), "queries": queries, "adapters": [fn.__name__ for fn in adapters], "record_count": len(raw), "seed_url": args.seed_url, "source_coverage": coverage}, failed
 
 
 def load_fixture(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any], list[dict[str, str]], str]:
@@ -500,11 +590,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--gap", default="")
     parser.add_argument("--year-from", type=int, default=0)
     parser.add_argument("--year-to", type=int, default=0)
+    parser.add_argument("--proceedings-venue", action="append", default=[],
+                        help="Repeatable PMLR index-label/CVF main-conference filter, e.g. ICML or CVPR; omitted means all indexed venues in the year window")
+    parser.add_argument("--notes-root", type=Path,
+                        help="Read-only existing Markdown note lookup; writes a separate match ledger")
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--fixture", type=Path, default=None)
     parser.add_argument("--limit", type=int, default=8)
     parser.add_argument("--sleep", type=float, default=0.0)
     args = parser.parse_args(argv)
+    if args.year_from and args.year_to and args.year_from > args.year_to:
+        parser.error("--year-from must not exceed --year-to")
+    if args.notes_root is not None and not args.notes_root.is_dir():
+        parser.error("--notes-root must be an existing directory")
     if args.fixture:
         raw, log, failed, fixture_gap = load_fixture(args.fixture)
         gap = args.gap or fixture_gap
@@ -517,7 +615,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.year_to:
         candidates = [c for c in candidates if not c.year or c.year <= args.year_to]
     ranked = rank_candidates(merge_candidates(candidates), gap=gap)
+    note_matches = (match_existing_notes([candidate.to_row(i + 1) for i, candidate in enumerate(ranked)],
+                                        args.notes_root) if args.notes_root is not None else None)
     write_outputs(ranked, args.out_dir, log, failed)
+    match_ledger = args.out_dir / "existing_note_matches.jsonl"
+    if note_matches is not None:
+        match_ledger.write_text(
+            "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in note_matches), encoding="utf-8")
+    elif match_ledger.exists():
+        match_ledger.unlink()
     print(f"candidates={len(ranked)} out_dir={args.out_dir}")
     return 0
 

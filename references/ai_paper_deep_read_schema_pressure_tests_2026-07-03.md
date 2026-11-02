@@ -29,9 +29,9 @@ This file records the RED/GREEN checks for replacing the old six-section formal 
 Run after editing:
 
 ```powershell
-python scripts\validate_structure.py tmp_skill_tests\new_schema_valid --require-beginner
-python scripts\validate_content_risks.py tmp_skill_tests\new_schema_valid
-rg -n "<legacy six-section phrase>|<removed duplicate trigger>|<legacy canonical wording>" <skill-root>
+python scripts\validate_structure.py _skill_work\test_packages\new_schema_valid --require-beginner
+python scripts\validate_content_risks.py _skill_work\test_packages\new_schema_valid
+rg -n "<legacy six-section phrase>|<removed duplicate trigger>|<legacy canonical wording>" _skill_work\literature-matrix-research
 ```
 
 Expected:

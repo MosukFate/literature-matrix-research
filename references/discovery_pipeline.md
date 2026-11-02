@@ -87,3 +87,51 @@ Never let citation count alone promote a paper to `core`.
 - `excluded`: irrelevant or too weakly sourced.
 
 Formal `paper-card` creation still follows the existing 0-10 deep-card schema and table evidence rules.
+
+## Conference/Year Retrieval and Existing Notes
+
+Use requested year bounds to choose proceedings indexes before fetching papers.
+PMLR volumes and CVF conference pages must come from the official indexes rather
+than a frozen volume/year list. With no bounds, the proceedings adapters use the
+current calendar year and the previous two years; broader historical searches
+need explicit bounds. `--proceedings-venue` narrows those proceedings adapters,
+not every aggregator result in the candidate pool.
+
+```powershell
+python scripts/discover_candidates.py --query "visual hallucination" --year-from 2026 --year-to 2026 --proceedings-venue ICML --proceedings-venue CVPR --notes-root <reading-package-or-vault> --out-dir <discovery-output>
+```
+
+Read `source_coverage` in `search_log.json` together with `failed_queries.md`.
+Report fetched indexes, requested years/venues, retrieval limits, missing
+indexes, and any incomplete coverage. A failed or absent directory is missing
+coverage, not evidence that no relevant paper exists. A bounded result list is
+not an exhaustive conference survey. Publication/source verification and the
+candidate ranking rules above still apply.
+Keep the official event label in `venue`; PMLR workshop volumes and main
+proceedings must remain distinguishable. `--proceedings-venue ICML` is a label
+filter and can also find volumes labelled "at ICML"; it does not itself certify
+main-track publication.
+
+When the target package or vault is known, `--notes-root` scans its Markdown
+notes without editing them and writes `existing_note_matches.jsonl` beside the
+candidate table. The candidate CSV schema remains unchanged. Each sidecar row
+preserves the candidate ID/title, match status/reason, and matched note path(s)
+and declared note type.
+
+- Match primary note metadata by normalized DOI, version-normalized arXiv ID,
+  OpenReview ID, then normalized exact title. Related-work citations in the body
+  are not the note's identity.
+- Reuse a unique matched note's existing ID/path, read its contents, and update
+  only the requested/generated material through the card-polish preservation
+  recipe. Keep personal notes/questions, manually added evidence, and images.
+- Review ambiguous matches and conflicting identifiers before selecting a note.
+  A fuzzy title similarity is not an automatic identity match.
+- Preserve the existing note's declared type and evidence state. A matched
+  `paper-stub` remains a stub until the original deep-card gates are satisfied.
+- Without `--notes-root`, discovery keeps its candidate outputs and removes any
+  stale note-match sidecar from a previous run in the same output directory.
+
+The matcher supports top-level scalar identity metadata in opening frontmatter;
+unsupported multiline/list-only metadata can remain unmatched and should be
+checked manually before creating a new card. See `card_polish_workflow.md` for
+the preservation contract.

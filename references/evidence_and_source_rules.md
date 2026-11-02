@@ -46,6 +46,23 @@ If no anchor exists, write:
 - `需回原文`.
 - `source-level only`.
 
+### Precise Claim Records and Experiment Context
+
+For the card's important numerical, comparative, and implementation claims, retain an object-level record in the existing evidence ledger. Use one row per distinct claim or experimental context; this is not a requirement to catalog every sentence in the paper.
+
+| Claim | Source/version and object | Direct locator | Experiment context | Reported value / derivation | Verification and boundary |
+|---|---|---|---|---|---|
+| Source-scoped statement | Section, equation, table row or figure; fixed code commit when relevant | Clickable PDF `#page=N` plus printed page if present, HTML anchor, or code file and lines | Model/size, data/split, metric/unit, baseline/decoding, relevant settings and runs | Separate author-reported mean/SD from calculated delta, ratio or explanatory example | Original-source checked / pending / static code only / reproduced; what remains unknown |
+
+- Check attribution as well as arithmetic: a correct number located in a result table must not be described as appearing in the abstract unless it actually does. Split links when named objects occupy different pages. A reachable link alone does not verify its semantic target.
+- Preserve units: percentage points versus relative percent, subset total versus full benchmark, maximum versus average, mean/SD versus significance. Distinguish static code correspondence from executed reproduction.
+- Link implementation claims to the fixed commit and relevant line range when available; label incomplete snapshots and missing adaptation files. Retain paper, supplement, evaluation-entry, and shell defaults separately when they differ.
+- A chapter-wide default is a reported instruction, not confirmation of a particular table's actual run. If broad defaults conflict and the table does not specify the setting, retain both source statements and mark the actual setting unconfirmed instead of choosing one by inference.
+- For key evidence actually reused in the card, compare contexts before combining results. Check main-versus-ablation defaults, displayed component/total consistency when additive, and suspiciously identical cross-model/scale rows including SDs. Match metric definitions and overlapping subsets before adding values. This is a scoped source check, not an automatic audit of every table.
+- Mark an unexplained inconsistency or duplication next to the affected claim and in the ledger; preserve reported values, state the two anchors, and avoid combining their increments. Do not silently repair source tables, allege misconduct, or discard unrelated evidence. If the comparison cannot be checked, record it as pending.
+
+An acceptable compact record is: `author-reported F1 74.84±0.34→82.23±0.22; derived +7.39 pp; Qwen-VL/GQA/Popular/direct sampling vs VCD; Table 1, formal PDF p.6; five runs; source checked, not reproduced`. The locator and context carry the evidence; a subjective quality score does not.
+
 ## Formulas
 
 Formula rules:

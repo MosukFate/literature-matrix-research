@@ -1,6 +1,6 @@
 ---
 name: literature-matrix-research
-description: Use when independently turning a research topic, seed paper, or paper corpus into a source-grounded paper matrix, Obsidian reading order, per-paper cards, venue trust split, benchmark table, evidence audit, original-result-table extraction, or beginner-readable paper notes.
+description: Use when independently turning a research topic, seed paper, or paper corpus into a source-grounded paper matrix, Obsidian reading order, per-paper cards, venue trust split, benchmark table, evidence audit, original-result-table extraction, beginner-readable paper notes, or persistent single-paper Q&A.
 ---
 
 # Literature Matrix Research
@@ -21,7 +21,8 @@ Use this skill when the user asks for:
 - venue trust splitting between official proceedings, arXiv-only, workshop, project/code-only, and unverified sources;
 - source-grounded quality checks for benchmark claims, formulas, tables, or per-paper summaries;
 - beginner-readable paper notes that explain positioning, intuition, method, formulas, baseline differences, experiments, reproduction, limits, and project fit;
-- detailed method rewrites or original result tables converted from PDF/HTML/MarkItDown into Markdown.
+- detailed method rewrites or original result tables converted from PDF/HTML/MarkItDown into Markdown;
+- persistent questions about a selected paper using a reusable, source-grounded reading package.
 
 Do not use it for a one-off paper lookup, a generic APA literature review, or a manuscript review unless the deliverable is a matrix/Obsidian corpus.
 
@@ -35,6 +36,8 @@ Default to `matrix` plus formal deep cards for paper-reading or research-synthes
 | `matrix` | organizing known papers | quicklook table, venue trust split, benchmark/results matrix |
 | `obsidian-package` | creating a full reading system | START, dashboard, staged indexes, cards, matrices, audits |
 | `audit-only` | checking an existing package | review matrix, findings report, link/source checks |
+| `paperqa-audit` | cross-PDF question answering, citation spot checks, or contradiction-candidate discovery | candidate evidence ledger and manual PDF verification queue |
+| `paper-dialogue` | persistent source-grounded questions about one selected paper | linked Paper2Skill source bundle, precise answers, reusable findings and open questions |
 | `card-polish` | improving existing cards | edited cards plus polish report |
 | `beginner-expansion` | making cards readable for non-readers | `## 0. 总览摘要` plus formula/metric explanation |
 | `deep-table-enrichment` | making cards method-complete and table-grounded | detailed methods, embedded examples, original result tables, result interpretation |
@@ -51,6 +54,8 @@ Default route: use `matrix + formal deep cards` for normal paper-reading, single
 - `matrix`: use when papers are known or after search screening when the user needs organization, trust splitting, benchmark comparison, relevance layering, or reading order. A matrix can hand off core papers to formal deep-card writing.
 - `obsidian-package`: use when the user wants the complete reading system with START, dashboards, indexes, cards, matrices, and audits.
 - `audit-only`: use when reviewing an existing package or checking source status, links, tables, claims, and validator findings.
+- `paperqa-audit`: use only when a verified local corpus needs cross-PDF evidence retrieval, citation spot checks, or contradiction candidates. Load `paperqa2-audit`; keep it optional and return every result to `audit-only` for original-source verification.
+- `paper-dialogue`: when the user wants continued questions about a selected paper, load installed `paper2agent` and select its Paper2Skill workflow to build or reuse a matching source bundle. Follow `references/paper_dialogue.md`; preserve the formal card and evidence rules. Source-only dialogue needs no MCP. Select Paper2MCP only for requested execution of existing research code.
 - `card-polish`, `beginner-expansion`, `deep-table-enrichment`, and `paper-original-rewrite`: use only after cards already exist or paper sources have been read deeply enough for formal `paper-card` work.
 - `planning-stub`: use when the user needs a fast research map before full source reading. Keep outputs as `paper-stub` or `matrix-stub` until validation supports promotion.
 ## Usage Examples
@@ -62,6 +67,7 @@ Use these prompt patterns to choose the right route:
 - Full Obsidian package: `Use literature-matrix-research to create the complete Obsidian package with START, dashboard, staged reading order, matrices, formal paper-cards, source audit, and validation report.`
 - search-only candidate table: `Search-only / candidate_table / 找论文 / seed expansion / 基础调查 for this topic. Output candidate_table.csv/jsonl, search_log.json, failed_queries.md, source_status, graph_relation, and layer; do not write deep cards yet.`
 - Fast planning map: `Create a planning-stub research map only. Use paper-stub or matrix-stub labels, and do not promote entries to paper-card until source evidence is sufficient.`
+- Persistent paper questions: `Use literature-matrix-research in paper-dialogue mode for this paper. Link or prepare its source bundle, preserve the deep card, and answer follow-up questions with exact source anchors and explicit unknowns.`
 
 If the user says only `read this paper`, `精读这篇`, `analyze this paper`, or `做深度卡`, treat it as the default single-paper deep-card route, not as `search-only`.
 ## Skill Chaining and Evolution
@@ -72,9 +78,11 @@ This skill is the canonical orchestrator for literature-matrix work, not a silo.
 
 - For skill edits, use `writing-skills` plus `superpowers:test-driven-development`; write or update pressure tests before changing deployed instructions.
 - For paper discovery and identifiers, use `paper-lookup`; keep raw URLs, IDs, failed searches, and source dates.
-- For PDF, table, and conversion work, use `pdf` and `markitdown`; treat extraction as evidence candidates until source/PDF correction is done.
+- For PDF, table, and conversion work, use `pdf` and `markitdown`; treat extraction as evidence candidates until source/PDF correction is done. For original figures, follow the acquisition and figure-ledger contract in `references/pdf_source_extraction.md`, including full caption, original figure number, source/version, page, and visual verification.
 - For Obsidian syntax, Bases, Canvas, and link conventions, use `obsidian-markdown`, `obsidian-bases`, and `json-canvas` as needed.
-- For claim critique, novelty risk, and overclaim checks, use `academic-paper-reviewer`; use `academic-paper` only when the deliverable turns into proposal/manuscript prose.
+- For claim critique, novelty risk, and overclaim checks, load `academic-research-suite` and select its `academic-paper-reviewer` workflow; select its `academic-paper` workflow only when the deliverable turns into proposal/manuscript prose. Resolve ARS research, review, and writing support through this unified entry and the installed workflow files, as defined in `references/skill_integration.md`.
+- For optional cross-PDF QA, citation-grounded spot checks, or contradiction candidates, use `paperqa2-audit`; its candidate evidence must not promote source status or directly rewrite paper cards.
+- For persistent single-paper dialogue, load `paper2agent` at source-bundle preparation or reuse and select Paper2Skill. Keep this skill's deep card as the explanatory layer; use Paper2MCP only when execution of the paper's existing code is requested.
 - Before claiming completion, use `superpowers:verification-before-completion` and report the command evidence.
 
 Do not force-load other skills with file paths or `@` links in the skill body. Name the skill and the phase where it should be loaded. This keeps future runs modular and prevents context bloat.
@@ -84,14 +92,15 @@ When the user adds a new rule, append it through the evolution protocol rather t
 
 1. Establish the research question, seed papers, date range, venue policy, package root, mirror/sync target, and deliverable mode.
 2. Search and screen papers. For online discovery or seed expansion, run `scripts/discover_candidates.py` or reproduce its candidate-table contract; record raw URLs, official identifiers, failed searches, citation graph signals, and source status.
-3. Deduplicate by title, DOI, arXiv ID, OpenReview ID, and official venue page.
+3. Deduplicate by title, DOI, arXiv ID, OpenReview ID, and official venue page. When a target reading package or vault is available, pass it as `--notes-root` to discovery and read `existing_note_matches.jsonl` before creating cards. Reuse an unambiguous existing card's ID/path, preserve personal annotations and images, and leave ambiguous/conflicting matches in the review queue; note presence does not establish source verification.
 4. Split papers into core, core-support, bridge, supplemental, matrix-only, and excluded.
 5. Build matrices before deep cards so coverage gaps are visible early.
 6. Write or update per-paper cards with source status, evidence anchors, one-sentence summary, and the AI paper deep-read schema.
 7. Treat `type: paper-card` as a formal deep card by default. A source-level planning note, prior-survey stub, or table-level-pending placeholder must use `type: paper-stub` or `type: matrix-stub`, not `type: paper-card`.
 8. When writing any formal `paper-card`, use the AI paper deep-read schema plus `deep-table-enrichment` / `paper-original-rewrite`: extract paper-original evidence, explain the paper as already-read synthesis, explain formulas and derivations where central, paste or manually correct relevant result tables when extractable, add immediate `结果解析 / Result interpretation`, and integrate examples inside the relevant analysis.
 9. If the user explicitly asks for a fast planning map, produce stubs honestly: label them as stubs, put them in the matrix or reading queue, and do not let them pass the paper-card validator.
-10. Audit structure, links, source status, strong claims, benchmark numbers, formulas, original tables, method detail, embedded examples, and overclaiming before claiming completion.
+10. Audit structure, links, source status, strong claims, benchmark numbers, formulas, original tables, method detail, embedded examples, and overclaiming before claiming completion. Use object-level claim records and scoped cross-table context checks from `references/evidence_and_source_rules.md`; recheck source links from the final export location.
+11. When PaperQA2 is explicitly useful and locally available, run the optional `paperqa-audit` phase after corpus screening, then verify its candidate evidence against original sources inside `audit-only`.
 
 ## Paper-Original Rewrite Rules
 
@@ -145,7 +154,7 @@ Read only the reference needed for the current mode:
 - Deep-card pressure tests and novice repair gate: `references/deep_card_depth_pressure_tests.md`.
 - Paper lookup, identifiers, official sources, query expansion: `references/paper_lookup_playbook.md`.
 - Online discovery, candidate-table schema, citation graph expansion, scoring, and arXiv policy: `references/discovery_pipeline.md`.
-- PDF/TXT/table extraction and source anchors: `references/pdf_source_extraction.md`.
+- PDF/TXT/table extraction, original figures, and source anchors: `references/pdf_source_extraction.md`.
 - Synthesis, novelty-risk audit, reviewer-style critique: `references/review_synthesis_rubric.md`.
 - Obsidian Markdown, wikilinks, callouts, Canvas/Bases: `references/obsidian_markdown_playbook.md`.
 - Package layout, staged indexes, START/Dashboard: `references/matrix_and_reading_order.md`.
@@ -155,6 +164,7 @@ Read only the reference needed for the current mode:
 - Beginner-readable explanation layer and formula explanations: `references/beginner_guide_layer.md`.
 - Detailed methods, embedded examples, original result tables, MarkItDown/PDF conversion: `references/deep_card_table_enrichment.md`.
 - Cross-skill orchestration and phase handoffs: `references/skill_integration.md`.
+- Persistent single-paper questions and Paper2Agent handoff: `references/paper_dialogue.md`.
 - Additive skill evolution, protected rules, and regression checks: `references/evolution_protocol.md`.
 
 ## Validation
@@ -164,15 +174,19 @@ Use bundled scripts when working on a local Obsidian package:
 ```bash
 python scripts/validate_structure.py path/to/obsidian_reading_order --require-beginner
 python scripts/validate_content_risks.py path/to/obsidian_reading_order
+python scripts/validate_evidence_links.py path/to/final-export
 python scripts/package_skill.py path/to/literature-matrix-research
 ```
 
 The scripts are heuristics, not substitutes for paper-level source review. Treat reported issues as a review queue until checked against the paper, source ledger, PDF, or converted table. For packages with lane `index.md` files, also run a custom `type: paper-card` filter so lane indexes are not misclassified as paper cards.
 
+The evidence-link check verifies packaging paths, not whether a claim points to the correct experiment or PDF page. Check important claim attribution, units, settings, and source anomalies against the original; do not treat fewer heuristic warnings as better scientific evidence.
+
 ## Quality Gates
 
 - Never promote `source_status` without official paper, PDF, table ledger, project page, or source report support.
 - Do not introduce unverified numbers, benchmark rankings, model names, or table conclusions.
+- PaperQA2 output is optional candidate evidence. It cannot promote `source_status`, verify numeric claims, or replace original-PDF/table review.
 - Keep paper IDs, filenames, wikilink targets, and staged order stable unless the user asks to reorganize.
 - Mainline/supplement/matrix-only distinctions must be visible from START and lane indexes.
 - Every actionable finding should include a card path, evidence path or source URL, issue, severity, and suggested fix.

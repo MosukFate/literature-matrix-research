@@ -41,8 +41,9 @@ Validators must now reject formal `type: paper-card` notes when they are actuall
 ## Verification Commands
 
 ```powershell
-python scripts\validate_structure.py tmp_skill_tests\shallow_matrix --require-beginner
-python scripts\validate_structure.py <package-root> --require-beginner
+$skillRoot = (Resolve-Path .).Path
+& $python "$skillRoot\scripts\validate_structure.py" tmp_skill_tests\shallow_matrix --require-beginner
+& $python "$skillRoot\scripts\validate_structure.py" path\to\paper-package --require-beginner
 ```
 
 Expected:

@@ -36,9 +36,10 @@ These rules are protected because they came from explicit user corrections and s
 Use these checks after future edits:
 
 ```powershell
-rg -n "## 11\. 示例|compact reconstructions|compact table-backed" <skill-root>
-rg -n "读方法时|读实验时" <skill-root>\SKILL.md <skill-root>\references
-rg -n "paper-stub|paper_card_too_short|method_section_too_short|missing_result_table|formula|baseline|reproduction" <skill-root>
+$skillRoot = (Resolve-Path .).Path
+rg -n "## 11\. 示例|compact reconstructions|compact table-backed" "$skillRoot"
+rg -n "读方法时|读实验时" "$skillRoot\SKILL.md" "$skillRoot\references"
+rg -n "paper-stub|paper_card_too_short|method_section_too_short|missing_result_table|formula|baseline|reproduction" "$skillRoot"
 Confirm the removed duplicate skill path is absent from the active namespace.
 ```
 
